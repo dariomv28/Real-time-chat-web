@@ -50,13 +50,13 @@ const Login = () => {
         const {username, email, password} = Object.fromEntries(formData); // Change that object into a Javascript object with username, email and password
 
         try {
-            const res = createUserWithEmailAndPassword(auth, email, password); // Create new user res
+            const res = await createUserWithEmailAndPassword(auth, email, password); // Create new user res
             //const imgUrl = await upload(avatar.file)
             await setDoc(doc(db, "users", res.user.uid), {
                 username,
                 email,
                 avatar: null,
-                id: res.user.id,
+                id: res.user.uid,
                 blocked: [],
             });
             await setDoc(doc(db, "userchats", res.user.uid), { // Create a document in userchats collection
