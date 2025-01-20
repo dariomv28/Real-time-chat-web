@@ -14,6 +14,7 @@ const Chat = ({ setShowDetail }) => {
     const endRef = useRef(null);
     const {chatId, user, isCurrentUserBlocked, isReceiverBlocked} = useChatStore();
     const {currentUser} = useUserStore();
+    const [timeUpdater, setTimeUpdater] = useState(0);
 
     const handleSend = async () => {
         if (text === "") return;
@@ -56,9 +57,28 @@ const Chat = ({ setShowDetail }) => {
         }
     }
 
+    const formatTime = (timeStamp) => {
+        const now = new Date();
+        const messageDate = timeStamp?.seconds
+            ? new Date(timeStamp.seconds * 1000)
+            : new Date(timeStamp);
+        const diff = Math.floor((now - messageDate) / 1000);
+
+        if (diff < 60) {
+            return `${diff} seconds ago`;
+        } else if (diff < 3600) {
+            return `${Math.floor(diff / 60)} minutes ago`;
+        } else if (diff < 86400) {
+            return `${Math.floor(diff / 3600)} hours ago`;
+        } else {
+            return `${Math.floor(diff / 86400)} days ago`;
+        }
+    };
+    
+
     useEffect(() => {
         endRef.current?.scrollIntoView({behavior: "smooth"});
-    },[]);
+    },[chat]);
 
     useEffect(() => {
         const unSub = onSnapshot(doc(db,"chats",chatId),(res) => {
@@ -69,6 +89,15 @@ const Chat = ({ setShowDetail }) => {
             unSub();
         }
     },[chatId]);
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setTimeUpdater((prev) => prev + 1);
+        }, 1000);
+
+        return () => clearInterval(interval); 
+    }, []);
+
 
     console.log(chat)
 
@@ -92,55 +121,12 @@ const Chat = ({ setShowDetail }) => {
             </div>
 
             <div className="center">
-
-                {/* <div className="message">
-                    <img src="./avatar.png" alt=""  />
-                    <div className="texts">
-                        <p>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Eos ducimus,
-                             nulla dolore quidem maiores aspernatur, 
-                             non illum placeat, odit facere autem iste modi ullam et sapiente perferendis 
-                             asperiores quo maxime.</p>
-                        <span>1 min ago</span>
-                    </div>
-                </div>
-
-                <div className="message own">
-                    <div className="texts">
-                        <img src="https://img.pikbest.com/origin/09/19/03/61zpIkbEsTGjk.jpg!w700wp" alt="" />
-                        <p>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Eos ducimus,
-                             nulla dolore quidem maiores aspernatur, 
-                             non illum placeat, odit facere autem iste modi ullam et sapiente perferendis 
-                             asperiores quo maxime.</p>
-                        <span>1 min ago</span>
-                    </div>
-                </div>
-
-                <div className="message">
-                    <img src="./avatar.png" alt=""  />
-                    <div className="texts">
-                        <p>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Eos ducimus,
-                             nulla dolore quidem maiores aspernatur, 
-                             non illum placeat, odit facere autem iste modi ullam et sapiente perferendis 
-                             asperiores quo maxime.</p>
-                        <span>1 min ago</span>
-                    </div>
-                </div>
-
-                <div className="message own">
-                    <div className="texts">
-                        <p>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Eos ducimus,
-                             nulla dolore quidem maiores aspernatur, 
-                             non illum placeat, odit facere autem iste modi ullam et sapiente perferendis 
-                             asperiores quo maxime.</p>
-                        <span>1 min ago</span>
-                    </div>
-                </div> */}
                 {chat?.messages?.map((message) => (
                     <div className={message.senderId === currentUser?.id ? "message own" : "message"} key = {message?.createAt}>
                         <div className="texts">
                             {message.img && <img src={message.img} alt="" />}
                             <p>{message.text}</p>
-                            {/* <span>1 min ago</span> */}
+                            <span>{formatTime(message?.createAt)}</span>
                         </div>
                     </div>
                 ))}

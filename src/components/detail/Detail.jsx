@@ -20,6 +20,7 @@ const Detail = () => {
             console.log(err);
         }
     }
+    
     return(
         <div className="detail">
             <div className="user">
